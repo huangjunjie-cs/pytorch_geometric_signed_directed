@@ -7,7 +7,6 @@ import scipy.sparse as sp
 import numpy as np
 from torch_geometric.nn import GATConv
 
-from torch_geometric_signed_directed.utils.signed import create_spectral_features
 from torch_geometric_signed_directed.utils.signed import Sign_Product_Entropy_Loss, Sign_Direction_Loss, Sign_Triangle_Loss
 
 class SDRLayer(nn.Module):
@@ -107,12 +106,8 @@ class SDGNN(nn.Module):
         self.neg_edge_index = edge_index_s[edge_index_s[:, 2] < 0][:, :2].t()
 
         if init_emb is None:
-            init_emb = create_spectral_features(
-                pos_edge_index=self.pos_edge_index,
-                neg_edge_index=self.neg_edge_index,
-                node_num=self.node_num,
-                dim=self.in_dim
-            ).to(self.device)
+            init_emb = torch.empty(self.node_num, self.in_dim)
+            nn.init.normal_(init_emb)
         else:
             init_emb = init_emb
 
@@ -190,9 +185,9 @@ class SDGNN(nn.Module):
         d4_4 = len(set(neg_in_edgelist[u]).intersection(
             set(neg_in_edgelist[v])))
 
-        return (d1_1, d1_2, d1_3, d1_4,\
-                d2_1, d2_2, d2_3, d2_4,\
-                d3_1, d3_2, d3_3, d3_4,\
+        return (d1_1, d1_2, d1_3, d1_4,
+                d2_1, d2_2, d2_3, d2_4,
+                d3_1, d3_2, d3_3, d3_4,
                 d4_1, d4_2, d4_3, d4_4)
 
     def build_adj_lists(self, edge_index_s: torch.LongTensor) -> List:

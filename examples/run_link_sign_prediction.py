@@ -21,8 +21,9 @@ def parameter_parser():
     parser.add_argument('--seed', type=int, default=2021)
     parser.add_argument('--in_dim', type=int, default=20)
     parser.add_argument('--out_dim', type=int, default=20)
-    parser.add_argument('--eval_step', type=int, default=10)
+    parser.add_argument('--eval_epoch', type=int, default=10)
     parser.add_argument('--patience', type=int, default=10)
+    parser.add_argument('--warmup_epoch', type=int, default=200)
     parser.add_argument('--runs', type=int, default=5,
                         help='number of distinct runs')
     return parser.parse_args()
@@ -96,6 +97,7 @@ for index in list(link_data.keys()):
     edge_index = splited_data['train']['edges']
     edge_sign = splited_data['train']['label'] * 2 - 1
     edge_index_s = torch.cat([edge_index, edge_sign.unsqueeze(-1)], dim=-1)
+    print(edge_index_s[100])
     in_dim = args.in_dim
     out_dim = args.out_dim
     if args.model == 'SGCN':
@@ -122,7 +124,9 @@ for index in list(link_data.keys()):
     for epoch in range(args.epochs):
         t = time.time()
         loss = train(model, optimizer)
-        if (epoch + 1) % args.eval_step == 0:
+        if epoch < args.warmup_epoch:
+            continue
+        if (epoch + 1) % args.eval_epoch == 0:
             eval_info = evaluate(model, splited_data, eval_flag='val')
             t = time.time() - t
             print(f'Val Time: {t:.3f}s, Epoch: {epoch:03d}, Loss: {loss:.4f}, '

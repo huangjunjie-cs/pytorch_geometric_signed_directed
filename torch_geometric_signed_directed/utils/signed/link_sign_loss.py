@@ -14,14 +14,15 @@ class Sign_Triangle_Loss(nn.Module):
     Args:
         emb_dim (int): The embedding size.
     """
-    def __init__(self, 
-                emb_dim: int,
-                edge_weight: sp.csc_matrix
-        ) -> None:
+    def __init__(
+        self,
+        emb_dim: int,
+        edge_weight: sp.csc_matrix
+    ) -> None:
         super().__init__()
         self.lin = nn.Linear(emb_dim * 2, 1)
         self.edge_weight = edge_weight
-    
+
     def forward(
         self,
         z: torch.Tensor,
@@ -153,9 +154,7 @@ class Link_Sign_Product_Loss(nn.Module):
         product2 = torch.einsum("ij, ij->i", [z_21, z_22])
         loss_pos = -1 * torch.sum(F.logsigmoid(product1))
         loss_neg = -1 * torch.sum(F.logsigmoid(-1 * product2))
-        C = pos_edge_index.shape[1] / neg_edge_index.shape[1]
-        return loss_pos + loss_neg * C
-
+        return loss_pos + loss_neg
 
 
 class Link_Sign_Entropy_Loss(nn.Module):

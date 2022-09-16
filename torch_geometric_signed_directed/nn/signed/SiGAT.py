@@ -42,12 +42,8 @@ class SiGAT(nn.Module):
         self.neg_edge_index = edge_index_s[edge_index_s[:, 2] < 0][:, :2].t()
 
         if init_emb is None:
-            init_emb = create_spectral_features(
-                pos_edge_index=self.pos_edge_index,
-                neg_edge_index=self.neg_edge_index,
-                node_num=self.node_num,
-                dim=self.in_dim
-            ).to(self.device)
+            init_emb = torch.empty(self.node_num, self.in_dim)
+            nn.init.normal_(init_emb)
         else:
             init_emb = init_emb
 
@@ -55,7 +51,6 @@ class SiGAT(nn.Module):
 
         self.adj_lists = self.build_adj_lists(edge_index_s)
         self.edge_lists = [self.map_adj_to_edges(i) for i in self.adj_lists]
-
         self.aggs = []
         for i in range(len(self.adj_lists)):
             self.aggs.append(
@@ -145,7 +140,7 @@ class SiGAT(nn.Module):
 
         for node_i, node_j, s in edge_index_s_list:
 
-            if s > 0 :
+            if s > 0:
                 pos_edgelist[node_i].add(node_j)
                 pos_edgelist[node_j].add(node_i)
 
